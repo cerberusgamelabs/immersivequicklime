@@ -1,0 +1,7 @@
+bin/
+obj/
+.vs/
+.vscode/
+Releases/*.zip
+Releases/_publish/
+Releases/immersivequicklime/

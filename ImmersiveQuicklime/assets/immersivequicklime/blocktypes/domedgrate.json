@@ -1,0 +1,104 @@
+{
+  "code": "domedgrate",
+  "class": "BlockDomedGrate",
+  "entityClass": "DomedLimestoneKiln",
+  "behaviors": [
+    {
+      "name": "Ignitable"
+    }
+  ],
+  "variantgroups": [
+    {
+      "code": "state",
+      "states": ["off", "lit"]
+    }
+  ],
+  "attributes": {
+    "kilnConfig": {
+      "maxDimension": 5,
+      "maxHeight": 1,
+      "warmupHours": 0.5,
+      "hoursPerPair": 0.5,
+      "breakChance": 0.1,
+      "inputUnits": 2,
+      "outputUnits": 3,
+      "fuels": [
+        { "code": "game:firewood", "type": "item", "burnHours": 20.0 },
+        { "code": "game:peatbrick", "type": "block", "burnHours": 16.0 },
+        { "code": "game:charcoal", "type": "item", "burnHours": 10.0 },
+        { "code": "game:coke", "type": "item", "burnHours": 10.0 },
+        { "code": "game:ore-lignite", "type": "item", "burnHours": 14.0 },
+        { "code": "game:ore-bituminouscoal", "type": "item", "burnHours": 12.0 },
+        { "code": "game:agedfirewood", "type": "item", "burnHours": 20.0 }
+      ]
+    },
+    "handbook": {
+      "include": true
+    }
+  },
+  "creativeinventory": {
+    "general": [
+      "domedgrate-off"
+    ],
+    "immersivequicklime": [
+      "domedgrate-off"
+    ]
+  },
+  "attributesByType": {
+    "*-lit": {
+      "handbook": {
+        "exclude": true
+      }
+    }
+  },
+  "shapeByType": {
+    "*": {
+      "base": "immersivequicklime:block/domedgrate"
+    }
+  },
+  "shapeInventory": {
+    "base": "immersivequicklime:block/domedgrate"
+  },
+  "textures": {
+    "brick": {
+      "base": "game:block/clay/brick/four/running/fire1"
+    }
+  },
+  "blockmaterial": "Ceramic",
+  "lightAbsorption": 0,
+  "lightHsvByType": {
+    "*-lit": [8, 4, 22]
+  },
+  "faceCullMode": "NeverCull",
+  "sideopaque": {
+    "all": false
+  },
+  "sidesolid": {
+    "all": false
+  },
+  "replaceable": 6000,
+  "resistance": 4,
+  "materialDensity": 6500,
+  "collisionbox": {
+    "x1": 0.0625,
+    "y1": 0,
+    "z1": 0.0625,
+    "x2": 0.9375,
+    "y2": 0.625,
+    "z2": 0.9375
+  },
+  "selectionbox": {
+    "x1": 0.0625,
+    "y1": 0,
+    "z1": 0.0625,
+    "x2": 0.9375,
+    "y2": 0.625,
+    "z2": 0.9375
+  },
+  "sounds": {
+	"walk": "game:walk/stone",
+    "place": "game:block/ceramicplace",
+    "break": "game:block/ceramic",
+    "hit": "game:block/ceramic"
+  }
+}

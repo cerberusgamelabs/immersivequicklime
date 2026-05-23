@@ -1,0 +1,16 @@
+{
+  "ingredientPattern": "B B,B B,BBB",
+  "ingredients": {
+    "B": {
+      "type": "item",
+      "code": "game:burnedbrick-fire"
+    }
+  },
+  "width": 3,
+  "height": 3,
+  "output": {
+    "type": "block",
+    "code": "immersivequicklime:domedgrate-off",
+    "quantity": 1
+  }
+}

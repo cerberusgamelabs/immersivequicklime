@@ -1,0 +1,9 @@
+{
+  "type": "code",
+  "modid": "immersivequicklime",
+  "name": "Immersive Quicklime",
+  "description": "Tired of having to grind and then cook lime to make Quicklime? Wish there was an easier way? Then look no further.",
+  "authors": ["LilianaXolkiyr"],
+  "version": "0.1.0",
+  "dependencies": {}
+}

@@ -1,0 +1,31 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35931.197 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CakeBuild", "CakeBuild\CakeBuild.csproj", "{00B54817-C95B-41CA-B866-E6B1A531214B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImmersiveQuicklime", "ImmersiveQuicklime\ImmersiveQuicklime.csproj", "{3667BC71-98AF-4384-B6D6-B4E635E42DEB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{00B54817-C95B-41CA-B866-E6B1A531214B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00B54817-C95B-41CA-B866-E6B1A531214B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00B54817-C95B-41CA-B866-E6B1A531214B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00B54817-C95B-41CA-B866-E6B1A531214B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3667BC71-98AF-4384-B6D6-B4E635E42DEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3667BC71-98AF-4384-B6D6-B4E635E42DEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3667BC71-98AF-4384-B6D6-B4E635E42DEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3667BC71-98AF-4384-B6D6-B4E635E42DEB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {22E9D2FD-B8AA-468E-8C3B-BD07437654B8}
+	EndGlobalSection
+EndGlobal

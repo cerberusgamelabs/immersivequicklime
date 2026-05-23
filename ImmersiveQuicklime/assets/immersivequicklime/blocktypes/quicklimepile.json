@@ -1,0 +1,95 @@
+{
+  "code": "quicklimepile",
+  "class": "BlockQuicklimePile",
+  "entityClass": "QuicklimePile",
+  "variantgroups": [
+    {
+      "code": "amount",
+      "states": [ "1", "2", "3", "4", "5", "6", "7", "8" ]
+    }
+  ],
+  "attributes": {
+    "layerGroupCode": "amount",
+    "fullBlockCode": "quicklimepile-8"
+  },
+  "creativeinventory": {
+    "general": [ "*-8" ],
+    "immersivequicklime": [ "*-8" ]
+  },
+  "blockmaterial": "Soil",
+  "drawtypebytype": {
+    "*-1": "BlockLayer_1",
+    "*-2": "BlockLayer_2",
+    "*-3": "BlockLayer_3",
+    "*-4": "BlockLayer_4",
+    "*-5": "BlockLayer_5",
+    "*-6": "BlockLayer_6",
+    "*-7": "BlockLayer_7",
+    "*-8": "Cube"
+  },
+  "shapebytype": {
+    "*-1": { "base": "block/basic/layers/2voxel" },
+    "*-2": { "base": "block/basic/layers/4voxel" },
+    "*-3": { "base": "block/basic/layers/6voxel" },
+    "*-4": { "base": "block/basic/layers/8voxel" },
+    "*-5": { "base": "block/basic/layers/10voxel" },
+    "*-6": { "base": "block/basic/layers/12voxel" },
+    "*-7": { "base": "block/basic/layers/14voxel" },
+    "*-8": { "base": "block/basic/layers/16voxel" }
+  },
+  "faceCullMode": "FlushExceptTop",
+  "lightAbsorption": 0,
+  "sidesolidByType": {
+    "*-8": { "all": true },
+    "*": { "all": false, "down": true }
+  },
+  "sideopaqueByType": {
+    "*-8": { "all": true },
+    "*": { "all": false, "down": true }
+  },
+  "textures": {
+    "north": { "base": "game:block/liquid/slakedlime" },
+    "south": { "base": "game:block/liquid/slakedlime" },
+    "east": { "base": "game:block/liquid/slakedlime" },
+    "west": { "base": "game:block/liquid/slakedlime" },
+    "verticals": { "base": "game:block/liquid/slakedlime" }
+  },
+  "replaceable": 100,
+  "resistance": 1,
+  "collisionbox": {
+    "x1": 0,
+    "y1": 0,
+    "x2": 1,
+    "y2": 0,
+    "z2": 1,
+    "y2ByType": {
+      "*-1": 0.125,
+      "*-2": 0.25,
+      "*-3": 0.375,
+      "*-4": 0.5,
+      "*-5": 0.625,
+      "*-6": 0.75,
+      "*-7": 0.875,
+      "*-8": 1
+    }
+  },
+  "selectionbox": {
+    "x1": 0,
+    "y1": 0,
+    "x2": 1,
+    "y2": 0,
+    "z2": 1,
+    "y2ByType": {
+      "*-1": 0.125,
+      "*-2": 0.25,
+      "*-3": 0.375,
+      "*-4": 0.5,
+      "*-5": 0.625,
+      "*-6": 0.75,
+      "*-7": 0.875,
+      "*-8": 1
+    }
+  },
+  "drops": [],
+  "materialDensity": 600
+}
