@@ -1,13 +1,12 @@
+using ImmersiveQuicklime.code.Blocks;
 using System;
 using System.Linq;
 using System.Text;
-using ImmersiveQuicklime.code.Blocks;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
-using Vintagestory.GameContent;
 
 namespace ImmersiveQuicklime.code.BlockEntities;
 
@@ -115,8 +114,6 @@ public class BlockEntityDomedGrate : BlockEntity
         CacheStructure(structure);
         burningUntilTotalHours = Api.World.Calendar.TotalHours + requiredBurnHours;
         SyncLitBlockVariant();
-        MarkVisualDirty();
-        MarkDirty(true);
     }
 
     public override void GetBlockInfo(IPlayer forPlayer, StringBuilder dsc)
@@ -398,23 +395,18 @@ public class BlockEntityDomedGrate : BlockEntity
             return;
         }
 
-        string desiredPath = Lit ? "domedgrate-lit" : "domedgrate-off";
-        if (Block.Code.Path == desiredPath)
+        string desiredState = Lit ? "lit" : "off";
+        if (Block.Code.Path == $"domedgrate-{desiredState}")
         {
             return;
         }
 
-        Block targetBlock = Api.World.GetBlock(new AssetLocation("immersivequicklime", desiredPath));
-        if (targetBlock == null || targetBlock.Id == 0)
-        {
-            return;
-        }
+        AssetLocation loc = Block.CodeWithVariant("state", desiredState);
+        Block? block = Api.World.GetBlock(loc);
+        if (block == null) return;
 
-        Api.World.BlockAccessor.ExchangeBlock(targetBlock.Id, Pos);
-
-        Api.World.BlockAccessor.MarkBlockDirty(Pos);
-        Api.World.BlockAccessor.MarkBlockModified(Pos);
-        Api.World.BlockAccessor.TriggerNeighbourBlockUpdate(Pos);
+        Api.World.BlockAccessor.ExchangeBlock(block.Id, Pos);
+        this.Block = block;
     }
 
     private void CacheStructure(LimestonePitStructure structure)
