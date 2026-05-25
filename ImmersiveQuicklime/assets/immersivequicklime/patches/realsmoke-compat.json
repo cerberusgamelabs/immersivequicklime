@@ -1,0 +1,26 @@
+[
+  {
+    "file": "immersivequicklime:blocktypes/domedgrate.json",
+    "op": "addmerge",
+    "path": "/entityBehaviorsByType/*-lit",
+    "dependsOn": [
+      {
+        "modid": "realsmoke"
+      }
+    ],
+    "value": [
+      {
+        "name": "BlockEntityBehaviorRealSmokeEmitter",
+        "properties": {
+          "smokeProduction": 6,
+          "isSmoking": "Lit",
+          "temperature": 950,
+          "carbonContent": 0.35,
+          "moistureContent": 0.6,
+          "ventAbove": 1,
+          "canVentSideways": false
+        }
+      }
+    ]
+  }
+]

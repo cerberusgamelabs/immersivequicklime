@@ -10,14 +10,17 @@ public sealed class LimestonePitStructure
 {
     public List<BlockPos> Cells { get; } = new();
     public int LimestoneCount { get; set; }
+    public List<KilnInputUnit> SourceUnits { get; } = new();
+}
+
+public sealed class KilnInputUnit
+{
+    public string ItemCode { get; set; } = "";
+    public int Count { get; set; }
 }
 
 public static class LimestonePitStructureResolver
 {
-    private static readonly AssetLocation LimestoneCode = new("game", "stone-limestone");
-    private static readonly AssetLocation LimestoneSandCode = new("game", "sand-limestone");
-    private static readonly AssetLocation LimestoneWavySandCode = new("game", "sandwavy-limestone");
-
     private sealed class BlockPosComparer : IEqualityComparer<BlockPos>
     {
         public static readonly BlockPosComparer Instance = new();
@@ -68,13 +71,17 @@ public static class LimestonePitStructureResolver
         while (queue.Count > 0)
         {
             var pos = queue.Dequeue();
-        if (!TryGetLimestoneCell(api.World, pos, out int count))
-        {
-            continue;
-        }
+            if (!TryGetLimeSourceCell(api.World, pos, out int count, out List<KilnInputUnit> sourceUnits))
+            {
+                continue;
+            }
 
             structure.Cells.Add(pos.Copy());
             structure.LimestoneCount += count;
+            foreach (KilnInputUnit sourceUnit in sourceUnits)
+            {
+                AddSourceUnit(structure.SourceUnits, sourceUnit.ItemCode, sourceUnit.Count);
+            }
 
             foreach (var face in WalkFaces)
             {
@@ -84,7 +91,7 @@ public static class LimestonePitStructureResolver
                     continue;
                 }
 
-                if (!TryGetLimestoneCell(api.World, next, out _))
+                if (!TryGetLimeSourceCell(api.World, next, out _, out _))
                 {
                     continue;
                 }
@@ -119,12 +126,14 @@ public static class LimestonePitStructureResolver
         return true;
     }
 
-    public static bool TryGetLimestoneCell(IWorldAccessor world, BlockPos pos, out int limestoneCount)
+    public static bool TryGetLimeSourceCell(IWorldAccessor world, BlockPos pos, out int limestoneCount, out List<KilnInputUnit> sourceUnits)
     {
         limestoneCount = 0;
+        sourceUnits = new List<KilnInputUnit>();
         Block block = world.BlockAccessor.GetBlock(pos);
-        if (TryGetLimestoneSandEquivalent(block, out limestoneCount))
+        if (TryGetSandEquivalent(block, out string? sourceItemCode, out limestoneCount))
         {
+            AddSourceUnit(sourceUnits, sourceItemCode!, limestoneCount);
             return true;
         }
 
@@ -142,19 +151,22 @@ public static class LimestonePitStructureResolver
                 continue;
             }
 
-            if (!slot.Itemstack.Collectible.Code.Equals(LimestoneCode))
+            AssetLocation code = slot.Itemstack.Collectible.Code;
+            if (!TryGetQuicklimeSourceItemCode(code, out string? itemCode))
             {
                 return false;
             }
 
             limestoneCount += slot.StackSize;
+            AddSourceUnit(sourceUnits, itemCode!, slot.StackSize);
         }
 
         return limestoneCount > 0;
     }
 
-    private static bool TryGetLimestoneSandEquivalent(Block? block, out int limestoneCount)
+    private static bool TryGetSandEquivalent(Block? block, out string? sourceItemCode, out int limestoneCount)
     {
+        sourceItemCode = null;
         limestoneCount = 0;
         AssetLocation? code = block?.Code;
         if (code == null || code.Domain != "game")
@@ -162,19 +174,31 @@ public static class LimestonePitStructureResolver
             return false;
         }
 
-        if (code.Equals(LimestoneSandCode) || code.Equals(LimestoneWavySandCode))
+        if (TryGetSandSourceItemCode(code.Path, out sourceItemCode))
         {
             limestoneCount = 64;
             return true;
         }
 
-        const string layeredPrefix = "sand-limestone-";
+        const string layeredPrefix = "sand-";
         if (!code.Path.StartsWith(layeredPrefix))
         {
             return false;
         }
 
-        string layerText = code.Path[layeredPrefix.Length..];
+        int layerSeparator = code.Path.LastIndexOf('-');
+        if (layerSeparator <= layeredPrefix.Length)
+        {
+            return false;
+        }
+
+        string sandPath = code.Path[..layerSeparator];
+        if (!TryGetSandSourceItemCode(sandPath, out sourceItemCode))
+        {
+            return false;
+        }
+
+        string layerText = code.Path[(layerSeparator + 1)..];
         if (!int.TryParse(layerText, out int layer) || layer < 1 || layer > 7)
         {
             return false;
@@ -182,6 +206,76 @@ public static class LimestonePitStructureResolver
 
         limestoneCount = layer * 8;
         return true;
+    }
+
+    private static bool TryGetQuicklimeSourceItemCode(AssetLocation code, out string? itemCode)
+    {
+        itemCode = null;
+        if (code.Domain != "game")
+        {
+            return false;
+        }
+
+        string path = code.Path;
+        if (path == "stone-limestone" || path == "stone-chalk")
+        {
+            itemCode = code.ToString();
+            return true;
+        }
+
+        if (path.StartsWith("stone-") && path.Contains("marble"))
+        {
+            itemCode = code.ToString();
+            return true;
+        }
+
+        if (path.StartsWith("coralchunk-"))
+        {
+            itemCode = code.ToString();
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool TryGetSandSourceItemCode(string sandPath, out string? itemCode)
+    {
+        itemCode = null;
+        string rock = sandPath switch
+        {
+            var path when path.StartsWith("sandwavy-") => path["sandwavy-".Length..],
+            var path when path.StartsWith("sand-") => path["sand-".Length..],
+            _ => ""
+        };
+
+        if (!IsQuicklimeRockType(rock))
+        {
+            return false;
+        }
+
+        itemCode = $"game:stone-{rock}";
+        return true;
+    }
+
+    private static bool IsQuicklimeRockType(string rock)
+    {
+        return rock == "limestone" || rock == "chalk" || rock.Contains("marble");
+    }
+
+    private static void AddSourceUnit(List<KilnInputUnit> sourceUnits, string itemCode, int count)
+    {
+        KilnInputUnit? existing = sourceUnits.FirstOrDefault(unit => unit.ItemCode == itemCode);
+        if (existing != null)
+        {
+            existing.Count += count;
+            return;
+        }
+
+        sourceUnits.Add(new KilnInputUnit
+        {
+            ItemCode = itemCode,
+            Count = count
+        });
     }
 
     private static bool ValidateSealedPit(IWorldAccessor world, LimestonePitStructure structure, BlockPos gratePos, out string failureCode)
@@ -242,7 +336,7 @@ public static class LimestonePitStructureResolver
 
     private static BlockPos? FindStartPos(IWorldAccessor world, BlockPos rootPos)
     {
-        if (TryGetLimestoneCell(world, rootPos, out _))
+        if (TryGetLimeSourceCell(world, rootPos, out _, out _))
         {
             return rootPos.Copy();
         }
@@ -250,7 +344,7 @@ public static class LimestonePitStructureResolver
         foreach (var face in WalkFaces)
         {
             var pos = rootPos.AddCopy(face);
-            if (TryGetLimestoneCell(world, pos, out _))
+            if (TryGetLimeSourceCell(world, pos, out _, out _))
             {
                 return pos;
             }

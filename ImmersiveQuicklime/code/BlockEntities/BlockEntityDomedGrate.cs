@@ -18,6 +18,7 @@ public class BlockEntityDomedGrate : BlockEntity
     private string fuelType = "";
     private string cachedCellPositions = "";
     private int cachedLimestoneCount;
+    private string cachedSourceUnits = "";
     private int fuelQuantity;
     private double burningUntilTotalHours;
     private double requiredBurnHours;
@@ -120,7 +121,7 @@ public class BlockEntityDomedGrate : BlockEntity
     {
         if (!string.IsNullOrEmpty(fuelCode))
         {
-            dsc.AppendLine(Lang.Get("immersivequicklime:fuel-line", fuelQuantity, Lang.Get(fuelCode)));
+            dsc.AppendLine(Lang.Get("immersivequicklime:fuel-line", fuelQuantity, GetFuelDisplayName()));
         }
         else
         {
@@ -149,6 +150,7 @@ public class BlockEntityDomedGrate : BlockEntity
         fuelType = tree.GetString(nameof(fuelType));
         cachedCellPositions = tree.GetString(nameof(cachedCellPositions));
         cachedLimestoneCount = tree.GetInt(nameof(cachedLimestoneCount));
+        cachedSourceUnits = tree.GetString(nameof(cachedSourceUnits));
         fuelQuantity = tree.GetInt(nameof(fuelQuantity));
         burningUntilTotalHours = tree.GetDouble(nameof(burningUntilTotalHours));
         requiredBurnHours = tree.GetDouble(nameof(requiredBurnHours));
@@ -169,6 +171,7 @@ public class BlockEntityDomedGrate : BlockEntity
         tree.SetString(nameof(fuelType), fuelType);
         tree.SetString(nameof(cachedCellPositions), cachedCellPositions);
         tree.SetInt(nameof(cachedLimestoneCount), cachedLimestoneCount);
+        tree.SetString(nameof(cachedSourceUnits), cachedSourceUnits);
         tree.SetInt(nameof(fuelQuantity), fuelQuantity);
         tree.SetDouble(nameof(burningUntilTotalHours), burningUntilTotalHours);
         tree.SetDouble(nameof(requiredBurnHours), requiredBurnHours);
@@ -216,7 +219,7 @@ public class BlockEntityDomedGrate : BlockEntity
 
     private void OnClientParticleTick(float dt)
     {
-        if (!Lit || Api?.Side != EnumAppSide.Client)
+        if (!Lit || Api?.Side != EnumAppSide.Client || ShouldUseRealSmokeCompat())
         {
             return;
         }
@@ -238,11 +241,15 @@ public class BlockEntityDomedGrate : BlockEntity
         );
     }
 
+    private bool ShouldUseRealSmokeCompat()
+    {
+        return Api?.World?.Config?.GetBool("RealSmokeEnabled", false) == true;
+    }
+
     private void ConvertStructure(LimestonePitStructure structure)
     {
         var quicklime = Api.World.GetItem(new AssetLocation("game", "quicklime"));
-        var limestone = Api.World.GetItem(new AssetLocation("game", "stone-limestone"));
-        if (quicklime == null || limestone == null)
+        if (quicklime == null)
         {
             Failed = true;
             return;
@@ -254,7 +261,7 @@ public class BlockEntityDomedGrate : BlockEntity
         int leftoverLimestone = totalInput % kilnConfig.InputUnits;
         ClearSourceCells(structure);
         PopulateQuicklimePiles(structure, quicklimeCount);
-        SpawnRemainingOutput(limestone, leftoverLimestone);
+        SpawnRemainingOutput(structure, leftoverLimestone);
     }
 
     private void MaybeBreakGrate()
@@ -271,6 +278,7 @@ public class BlockEntityDomedGrate : BlockEntity
         fuelType = "";
         cachedCellPositions = "";
         cachedLimestoneCount = 0;
+        cachedSourceUnits = "";
         fuelQuantity = 0;
         burningUntilTotalHours = 0;
         requiredBurnHours = 0;
@@ -348,7 +356,7 @@ public class BlockEntityDomedGrate : BlockEntity
         }
     }
 
-    private void SpawnRemainingOutput(Item item, int remainingCount)
+    private void SpawnRemainingOutput(LimestonePitStructure structure, int remainingCount)
     {
         if (remainingCount <= 0)
         {
@@ -356,11 +364,27 @@ public class BlockEntityDomedGrate : BlockEntity
         }
 
         var spawnPos = Pos.ToVec3d().Add(0.5, 0.75, 0.5);
-        while (remainingCount > 0)
+        foreach (KilnInputUnit sourceUnit in structure.SourceUnits)
         {
-            int stackSize = Math.Min(item.MaxStackSize, remainingCount);
-            Api.World.SpawnItemEntity(new ItemStack(item, stackSize), spawnPos);
-            remainingCount -= stackSize;
+            if (remainingCount <= 0)
+            {
+                break;
+            }
+
+            Item? item = Api.World.GetItem(AssetLocation.Create(sourceUnit.ItemCode));
+            if (item == null)
+            {
+                continue;
+            }
+
+            int materialCount = Math.Min(sourceUnit.Count, remainingCount);
+            while (materialCount > 0)
+            {
+                int stackSize = Math.Min(item.MaxStackSize, materialCount);
+                Api.World.SpawnItemEntity(new ItemStack(item, stackSize), spawnPos);
+                materialCount -= stackSize;
+                remainingCount -= stackSize;
+            }
         }
     }
 
@@ -413,6 +437,7 @@ public class BlockEntityDomedGrate : BlockEntity
     {
         cachedLimestoneCount = structure.LimestoneCount;
         cachedCellPositions = string.Join(";", structure.Cells.Select(pos => $"{pos.X},{pos.Y},{pos.Z}"));
+        cachedSourceUnits = string.Join(";", structure.SourceUnits.Select(unit => $"{unit.ItemCode}={unit.Count}"));
     }
 
     private LimestonePitStructure? GetCachedStructure()
@@ -443,6 +468,42 @@ public class BlockEntityDomedGrate : BlockEntity
             structure.Cells.Add(new BlockPos(x, y, z));
         }
 
+        foreach (string token in cachedSourceUnits.Split(';', StringSplitOptions.RemoveEmptyEntries))
+        {
+            int separatorIndex = token.LastIndexOf('=');
+            if (separatorIndex <= 0 || separatorIndex >= token.Length - 1)
+            {
+                continue;
+            }
+
+            string itemCode = token[..separatorIndex];
+            if (!int.TryParse(token[(separatorIndex + 1)..], out int count) || count <= 0)
+            {
+                continue;
+            }
+
+            structure.SourceUnits.Add(new KilnInputUnit
+            {
+                ItemCode = itemCode,
+                Count = count
+            });
+        }
+
         return structure.Cells.Count == 0 ? null : structure;
+    }
+
+    private string GetFuelDisplayName()
+    {
+        CollectibleObject? collectible = fuelType == "block"
+            ? Api.World.GetBlock(AssetLocation.Create(fuelCode))
+            : Api.World.GetItem(AssetLocation.Create(fuelCode));
+
+        if (collectible == null)
+        {
+            return Lang.Get(fuelCode);
+        }
+
+        string? displayName = collectible.GetHeldItemName(new ItemStack(collectible));
+        return !string.IsNullOrWhiteSpace(displayName) ? displayName : Lang.Get(fuelCode);
     }
 }

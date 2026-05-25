@@ -9,7 +9,7 @@
   "immersivequicklime:burning-hours": "Burning: {0}h remaining",
   "immersivequicklime:error-mixed-fuel": "This kiln only accepts one fuel type per burn.",
   "immersivequicklime:error-fuel-full": "This kiln already has enough fuel for the current batch.",
-  "immersivequicklime:error-no-limestone": "The grate must sit over limestone ground storage.",
+  "immersivequicklime:error-no-limestone": "The grate must sit over valid lime-bearing material.",
   "immersivequicklime:error-too-large": "This limestone pit is larger than 5x5x1.",
   "immersivequicklime:error-bad-floor": "The limestone pit needs a solid non-flammable floor.",
   "immersivequicklime:error-bad-wall": "The limestone pit needs solid non-flammable walls.",
